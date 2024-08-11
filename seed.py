@@ -4,7 +4,7 @@ import hashlib
 def bits_entropy():
     return secrets.token_bytes(16) # esadecimale 
 
-bits_hex=bits_entropy()
+bits_hex=bits_entropy() # range between 128 bits and 512 bits 
 
 sha256=hashlib.sha256() # sha256 for checksum
 sha256.update(bits_hex)
@@ -28,3 +28,16 @@ with open('words.txt', mode='r') as f:
         seed_phrase+= ' ' +  words[index_word]
     
     print(seed_phrase)
+
+
+# Parameters
+hash_name = 'sha512'  # The hash algorithm to use
+password = b'password' # Passphrase
+salt = b'mnemonic' + password  # mnemonic è una stringa che è sempre permanente 
+iterations = 2048  # Number of iterations
+dklen = 32  # Length of the derived key (512 bits)
+
+# Derive the key
+key = hashlib.pbkdf2_hmac(hash_name, password, salt, iterations, dklen).hex()
+
+print(key)
