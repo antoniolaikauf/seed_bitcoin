@@ -37,6 +37,10 @@ salt = b'mnemonic' # + passphrase  # mnemonic è una stringa che è sempre perma
 iterations = 2048  # Number of iterations
 dklen = 64  # Length of the derived key (512 bits)
 
-# Derive the key
-key = hashlib.pbkdf2_hmac(hash_name, seed_phrase, salt, iterations, dklen).hex()
-print(key)
+# bits seed
+bit_seed= hashlib.pbkdf2_hmac(hash_name, seed_phrase, salt, iterations, dklen).hex()
+bit_seed=bytes(bit_seed,'utf-8')
+
+# Derive the key e master chain
+private_key_master_chain= hashlib.pbkdf2_hmac(hash_name, b'ciao', b'Bitcoin seed', iterations, dklen).hex()
+print(private_key_master_chain)
