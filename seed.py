@@ -1,5 +1,6 @@
 import secrets
 import hashlib
+from termcolor import colored
 
 def bits_entropy():
     return secrets.token_bytes(16) # esadecimale 
@@ -44,3 +45,9 @@ bit_seed=bytes(bit_seed,'utf-8')
 # Derive the key e master chain
 private_key_master_chain= hashlib.pbkdf2_hmac(hash_name, b'ciao', b'Bitcoin seed', iterations, dklen).hex()
 print(private_key_master_chain)
+private_key=private_key_master_chain[:64]
+master_chain=private_key_master_chain[64:]
+
+print(f"private key: {colored(private_key, 'red')}, master chain: {colored(master_chain, 'blue')}")
+
+
