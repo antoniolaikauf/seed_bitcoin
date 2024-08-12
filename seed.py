@@ -16,28 +16,27 @@ bits=''.join(format(bytes,'08b') for bytes in bits_hex) # bytes hex to bits
 hex_string=bits + checksum
 array_bits_words=[hex_string[i : i + 11] for i in range(0,len(hex_string), 11)]
 
+seed_phrase=''
 with open('words.txt', mode='r') as f:
     words=f.readlines()
-    seed_phrase=''
+    print(words)
 
     for x in range(12): # seed prhase 12
         extracted_bits= array_bits_words[x]
 
         index_word=int(extracted_bits,2)
 
-        seed_phrase+= ' ' +  words[index_word]
-    
+        seed_phrase+= ' ' +  words[index_word].rstrip()
+    seed_phrase=bytes(seed_phrase,'utf-8')
     print(seed_phrase)
-
 
 # Parameters
 hash_name = 'sha512'  # The hash algorithm to use
-password = b'password' # Passphrase
-salt = b'mnemonic' + password  # mnemonic è una stringa che è sempre permanente 
+# passphrase= b'c'
+salt = b'mnemonic' # + passphrase  # mnemonic è una stringa che è sempre permanente 
 iterations = 2048  # Number of iterations
-dklen = 32  # Length of the derived key (512 bits)
+dklen = 64  # Length of the derived key (512 bits)
 
 # Derive the key
-key = hashlib.pbkdf2_hmac(hash_name, password, salt, iterations, dklen).hex()
-
+key = hashlib.pbkdf2_hmac(hash_name, seed_phrase, salt, iterations, dklen).hex()
 print(key)
