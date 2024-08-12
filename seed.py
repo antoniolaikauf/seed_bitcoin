@@ -1,6 +1,10 @@
 import secrets
 import hashlib
 from termcolor import colored
+from ecutils.curves import get
+from ecutils.core import EllipticCurve
+from fastecdsa import keys, curve,ecdsa
+
 
 def bits_entropy():
     return secrets.token_bytes(16) # esadecimale 
@@ -20,7 +24,6 @@ array_bits_words=[hex_string[i : i + 11] for i in range(0,len(hex_string), 11)]
 seed_phrase=''
 with open('words.txt', mode='r') as f:
     words=f.readlines()
-    print(words)
 
     for x in range(12): # seed prhase 12
         extracted_bits= array_bits_words[x]
@@ -43,11 +46,15 @@ bit_seed= hashlib.pbkdf2_hmac(hash_name, seed_phrase, salt, iterations, dklen).h
 bit_seed=bytes(bit_seed,'utf-8')
 
 # Derive the key e master chain
-private_key_master_chain= hashlib.pbkdf2_hmac(hash_name, b'ciao', b'Bitcoin seed', iterations, dklen).hex()
+private_key_master_chain= hashlib.pbkdf2_hmac(hash_name, bit_seed, b'Bitcoin seed', iterations, dklen).hex()
 print(private_key_master_chain)
+
 private_key=private_key_master_chain[:64]
 master_chain=private_key_master_chain[64:]
-
 print(f"private key: {colored(private_key, 'red')}, master chain: {colored(master_chain, 'blue')}")
 
+curve=curve.secp256k1
+private_key=int(private_key,16)
+pub_key = keys.get_public_key(private_key,curve) 
 
+print(pub_key)
