@@ -3,7 +3,7 @@ import hashlib
 from termcolor import colored
 from ecutils.curves import get
 from ecutils.core import EllipticCurve
-from fastecdsa import keys, curve,ecdsa
+from fastecdsa import keys, curve,ecdsa # no supporto per windows
 
 
 def bits_entropy():
@@ -55,6 +55,6 @@ print(f"private key: {colored(private_key, 'red')}, master chain: {colored(maste
 
 curve=curve.secp256k1
 private_key=int(private_key,16)
-pub_key = keys.get_public_key(private_key,curve) 
+pub_key = keys.get_public_key(private_key,curve) # chiave pubblica con elliptic curve
 
 print(pub_key)
