@@ -2,6 +2,7 @@ import secrets
 import hashlib
 from termcolor import colored
 import ecdsa
+from Crypto.Hash import RIPEMD160
 
 # def bits_entropy():
 #     return secrets.token_bytes(16) # esadecimale 
@@ -61,7 +62,31 @@ def prefisso(x, y, p=''): # prefisso
     if int(y[-1], 16) % 2 == 0:  p='02'
     else: y = p='03'
     y,x = p + y, p + x
-    return (x, y)
+    return {'public_key_x':x, 'public_key_y':y}
+
+'''
+la chiave pubblica compressa è di 264 bits perchè si aggiunge il prefisso ed è sempre la cordinata x della curva ellittica 
+'''
 
 pair_key=prefisso(public_key_x, public_key_y)
-print(f"chiave pubblica: {public_key}\nchiave pubblica compressa:{pair_key[0]}\npunto x in SECP256k1: {pair_key[0]}\npunto y in SECP256k1: {pair_key[1]},")
+print(f"chiave pubblica: {public_key}\nchiave pubblica compressa:{pair_key['public_key_x']}\npunto x in SECP256k1: {pair_key['public_key_x']}\npunto y in SECP256k1: {pair_key['public_key_y']},")
+
+class Bitcoin_address():
+    def __init__(self, public_key):
+        self.publick_key=public_key
+
+    def sha_256(self): # primo processo per address del double hash
+        sha256_kp=hashlib.sha256()
+        sha256_kp.update(bytes(self.publick_key,'utf-8'))
+        sha256_kp=sha256_kp.hexdigest()
+        return sha256_kp
+    
+    def ripend_160(self,value): #secondo processo del double hash
+        h=RIPEMD160.new()
+        h.update(bytes(value,'utf-8'))
+        h=h.hexdigest()
+        return h
+
+address=Bitcoin_address(pair_key['public_key_x'])
+print(address.sha_256())
+print(address.ripend_160(address.sha_256()))
