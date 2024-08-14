@@ -56,7 +56,7 @@ private_key_bytes = bytes.fromhex(private_key)
 sk = ecdsa.SigningKey.from_string(private_key_bytes, curve=ecdsa.SECP256k1)
 vk = sk.verifying_key
 public_key = (b'\04' + vk.to_string()).hex() # 04 | x | y cordinate sulla curva SECP256k1
-public_key_y, public_key_x = hex(vk.pubkey.point.y()), hex(vk.pubkey.point.x()) # cordinate 
+public_key_y, public_key_x = hex(vk.pubkey.point.y())[2:], hex(vk.pubkey.point.x())[2:] # cordinate 
 
 def prefisso(x, y, p=''): # prefisso
     if int(y[-1], 16) % 2 == 0:  p='02'
@@ -65,4 +65,5 @@ def prefisso(x, y, p=''): # prefisso
     return (x, y)
 
 public_key_compress=prefisso(public_key_x, public_key_y)[0]
+print(len(public_key_compress))
 print(f"chiave pubblica: {public_key}\nchiave pubblica compressa:{public_key_compress}\npunto x in SECP256k1: {public_key_x}\npunto y in SECP256k1: {public_key_y},")
