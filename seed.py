@@ -3,8 +3,7 @@ import hashlib
 from termcolor import colored
 from ecutils.curves import get
 from ecutils.core import EllipticCurve
-from fastecdsa import keys, curve,ecdsa # no supporto per windows
-
+import ecdsa
 
 def bits_entropy():
     return secrets.token_bytes(16) # esadecimale 
@@ -53,8 +52,17 @@ private_key=private_key_master_chain[:64]
 master_chain=private_key_master_chain[64:]
 print(f"private key: {colored(private_key, 'red')}, master chain: {colored(master_chain, 'blue')}")
 
-curve=curve.secp256k1
-private_key=int(private_key,16)
-pub_key = keys.get_public_key(private_key,curve) # chiave pubblica con elliptic curve
+private_key_bytes = bytes.fromhex(private_key)
+sk = ecdsa.SigningKey.from_string(private_key_bytes, curve=ecdsa.SECP256k1)
+vk = sk.verifying_key
+public_key = (b'\04' + vk.to_string()).hex() # 04 | x | y cordinate sulla curva SECP256k1
+public_key_y, public_key_x = hex(vk.pubkey.point.y()), hex(vk.pubkey.point.x()) # cordinate 
 
-print(pub_key)
+def prefisso(x, y, p=''): # prefisso
+    if int(y[-1], 16) % 2 == 0:  p='02'
+    else: y = p='03'
+    y,x = p + y, p + x
+    return (x, y)
+
+public_key_compress=prefisso(public_key_x, public_key_y)[0]
+print(f"chiave pubblica: {public_key}\nchiave pubblica compressa:{public_key_compress}\npunto x in SECP256k1: {public_key_x}\npunto y in SECP256k1: {public_key_y},")
