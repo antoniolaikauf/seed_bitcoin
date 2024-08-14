@@ -85,8 +85,15 @@ class Bitcoin_address():
         h=RIPEMD160.new()
         h.update(bytes(value,'utf-8'))
         h=h.hexdigest()
-        return h
+        return h # payload 
+    
+    def base58encoding(self,payload):
+        version= '00'
+        payload = version + payload
+        #continuare qua 
 
 address=Bitcoin_address(pair_key['public_key_x'])
 print(address.sha_256())
-print(address.ripend_160(address.sha_256()))
+payload=address.ripend_160(address.sha_256())
+print(payload)
+address.base58encoding(payload)
