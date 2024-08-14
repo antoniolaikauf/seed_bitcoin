@@ -1,21 +1,20 @@
 import secrets
 import hashlib
 from termcolor import colored
-from ecutils.curves import get
-from ecutils.core import EllipticCurve
 import ecdsa
 
-def bits_entropy():
-    return secrets.token_bytes(16) # esadecimale 
+# def bits_entropy():
+#     return secrets.token_bytes(16) # esadecimale 
 
-bits_hex=bits_entropy() # range between 128 bits and 512 bits 
+# bits_hex=bits_entropy() # range between 128 bits and 512 bits 
 
+bits=b'fd3ee153a6081a1811c39590eff75459'
 sha256=hashlib.sha256() # sha256 for checksum
-sha256.update(bits_hex)
+sha256.update(bits)
 sha256=sha256.hexdigest()
 checksum=bin(int(sha256[:1],16))[2:].zfill(4) # first 4 bits of sha256
 
-bits=''.join(format(bytes,'08b') for bytes in bits_hex) # bytes hex to bits 
+bits=''.join(format(bytes,'08b') for bytes in bits) # bytes hex to bits 
 
 hex_string=bits + checksum
 array_bits_words=[hex_string[i : i + 11] for i in range(0,len(hex_string), 11)]
@@ -46,7 +45,7 @@ bit_seed=bytes(bit_seed,'utf-8')
 
 # Derive the key e master chain
 private_key_master_chain= hashlib.pbkdf2_hmac(hash_name, bit_seed, b'Bitcoin seed', iterations, dklen).hex()
-print(private_key_master_chain)
+# print(private_key_master_chain)
 
 private_key=private_key_master_chain[:64]
 master_chain=private_key_master_chain[64:]
@@ -65,5 +64,4 @@ def prefisso(x, y, p=''): # prefisso
     return (x, y)
 
 public_key_compress=prefisso(public_key_x, public_key_y)[0]
-print(len(public_key_compress))
 print(f"chiave pubblica: {public_key}\nchiave pubblica compressa:{public_key_compress}\npunto x in SECP256k1: {public_key_x}\npunto y in SECP256k1: {public_key_y},")
