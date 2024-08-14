@@ -63,5 +63,5 @@ def prefisso(x, y, p=''): # prefisso
     y,x = p + y, p + x
     return (x, y)
 
-public_key_compress=prefisso(public_key_x, public_key_y)[0]
-print(f"chiave pubblica: {public_key}\nchiave pubblica compressa:{public_key_compress}\npunto x in SECP256k1: {public_key_x}\npunto y in SECP256k1: {public_key_y},")
+pair_key=prefisso(public_key_x, public_key_y)
+print(f"chiave pubblica: {public_key}\nchiave pubblica compressa:{pair_key[0]}\npunto x in SECP256k1: {pair_key[0]}\npunto y in SECP256k1: {pair_key[1]},")
