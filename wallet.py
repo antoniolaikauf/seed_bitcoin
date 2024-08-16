@@ -1,8 +1,10 @@
 import hashlib
-from termcolor import colored
 import ecdsa
-from Crypto.Hash import RIPEMD160
 import base58
+import pdb
+from Crypto.Hash import RIPEMD160
+from termcolor import colored
+
 
 entropy_bits= 'fd3ee153a6081a1811c39590eff75459'
 bits=''.join([bin(int(x,16))[2:].zfill(4) for x in entropy_bits])
@@ -14,7 +16,6 @@ checksum=bin(int(sha256[:1],16))[2:].zfill(4) # first 4 bits of sha256
 
 hex_string=bits + checksum
 array_bits_words=[hex_string[i : i + 11] for i in range(0,len(hex_string), 11)]
-
 seed_phrase=''
 with open('words.txt', mode='r') as f:
     words=f.readlines()
@@ -35,12 +36,14 @@ salt = b'mnemonic' # + passphrase  # mnemonic è una stringa che è sempre perma
 iterations = 2048  # Number of iterations
 dklen = 64  # Length of the derived key (512 bits)
 
-# bits seed
-bit_seed= hashlib.pbkdf2_hmac(hash_name, seed_phrase, salt, iterations, dklen).hex()
-bit_seed=bytes(bit_seed,'utf-8')
+def key_stretching_function(n,s_p,s,i,dk): # bits seed
+    bit_seed= hashlib.pbkdf2_hmac(n, s_p, s, i, dk).hex()
+    return bytes(bit_seed,'utf-8')
+
+bits_seed_512=key_stretching_function(hash_name,seed_phrase,salt,iterations,dklen)
 
 # Derive the key e master chain
-private_key_master_chain= hashlib.pbkdf2_hmac(hash_name, bit_seed, b'Bitcoin seed', iterations, dklen).hex()
+private_key_master_chain= hashlib.pbkdf2_hmac(hash_name, bits_seed_512, b'Bitcoin seed', iterations, dklen).hex()
 # print(private_key_master_chain)
 
 private_key=private_key_master_chain[:64]
