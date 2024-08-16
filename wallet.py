@@ -3,16 +3,18 @@ import hashlib
 from termcolor import colored
 import ecdsa
 from Crypto.Hash import RIPEMD160
+import base58
 
 # def bits_entropy():
 #     return secrets.token_bytes(16) # esadecimale 
 
 # bits_hex=bits_entropy() # range between 128 bits and 512 bits 
 
-bits=b'fd3ee153a6081a1811c39590eff75459'
+bits= b'fd3ee153a6081a1811c39590eff75459'
 sha256=hashlib.sha256() # sha256 for checksum
 sha256.update(bits)
 sha256=sha256.hexdigest()
+print(sha256)
 checksum=bin(int(sha256[:1],16))[2:].zfill(4) # first 4 bits of sha256
 
 bits=''.join(format(bytes,'08b') for bytes in bits) # bytes hex to bits 
@@ -87,13 +89,20 @@ class Bitcoin_address():
         h=h.hexdigest()
         return h # payload 
     
-    def base58encoding(self,payload):
-        version= '00'
-        payload = version + payload
-        #continuare qua 
+    def base58encoding(self,payload):# chiave pubblica
+        version = '00'
+        data = version + payload
+        #two sha256
+        first_sha256,second_sha256= hashlib.sha256(), hashlib.sha256()
+        first_sha256.update(bytes(data, 'utf-8'))
+        second_sha256.update(bytes(first_sha256.hexdigest(),'utf-8'))
+        second_sha256=second_sha256.hexdigest()
+
+        checksum = second_sha256[:8] # checksum
+        data+= checksum
+        address=base58.b58encode_check(bytes.fromhex(data))
+        return address
 
 address=Bitcoin_address(pair_key['public_key_x'])
-print(address.sha_256())
 payload=address.ripend_160(address.sha_256())
-print(payload)
-address.base58encoding(payload)
+print(address.base58encoding(payload))
