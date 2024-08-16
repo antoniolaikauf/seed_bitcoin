@@ -5,27 +5,24 @@ import pdb
 from Crypto.Hash import RIPEMD160
 from termcolor import colored
 
-
-entropy_bits= 'fd3ee153a6081a1811c39590eff75459'
+entropy_bits= '0168071cf29dbdf232de82fa34acb933'
 bits=''.join([bin(int(x,16))[2:].zfill(4) for x in entropy_bits])
 
-sha256=hashlib.sha256() # sha256 for checksum
-sha256.update(bytes(entropy_bits,'utf-8'))
-sha256=sha256.hexdigest()
+entropy_bits=bytes.fromhex(entropy_bits)
+sha256=hashlib.sha256(entropy_bits).hexdigest()
 checksum=bin(int(sha256[:1],16))[2:].zfill(4) # first 4 bits of sha256
-
 hex_string=bits + checksum
 array_bits_words=[hex_string[i : i + 11] for i in range(0,len(hex_string), 11)]
 seed_phrase=''
+
 with open('words.txt', mode='r') as f:
     words=f.readlines()
 
     for x in range(12): # seed prhase 12
         extracted_bits= array_bits_words[x]
-
         index_word=int(extracted_bits,2)
-
         seed_phrase+= ' ' +  words[index_word].rstrip()
+
     seed_phrase=bytes(seed_phrase,'utf-8')
     print(seed_phrase)
 
@@ -44,10 +41,8 @@ bits_seed_512=key_stretching_function(hash_name,seed_phrase,salt,iterations,dkle
 
 # Derive the key e master chain
 private_key_master_chain= hashlib.pbkdf2_hmac(hash_name, bits_seed_512, b'Bitcoin seed', iterations, dklen).hex()
-# print(private_key_master_chain)
 
-private_key=private_key_master_chain[:64]
-master_chain=private_key_master_chain[64:]
+private_key, master_chain=private_key_master_chain[:64], private_key_master_chain[64:]
 print(f"private key: {colored(private_key, 'red')}, master chain: {colored(master_chain, 'blue')}")
 
 private_key_bytes = bytes.fromhex(private_key)
@@ -101,6 +96,6 @@ class Bitcoin_address():
 
 address=Bitcoin_address(pair_key['public_key_x'])
 payload=address.ripend_160(address.sha_256())
-print(len(address.base58encoding(payload)))
+print(address.base58encoding(payload))
 
 print(len('1CBUDhWJyJHjLPqfwt4abJrTuwFSa933JV'))
