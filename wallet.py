@@ -1,10 +1,9 @@
 import hashlib
 import ecdsa
 import base58
-import pdb
 from Crypto.Hash import RIPEMD160
 from termcolor import colored
-import secrets
+# import secrets
 
 # print(secrets.token_bytes(16).hex())  generate new bits entropy 
 
@@ -15,7 +14,7 @@ entropy_bits=bytes.fromhex(entropy_bits)
 sha256=hashlib.sha256(entropy_bits).hexdigest()
 checksum=bin(int(sha256[:1],16))[2:].zfill(4) # first 4 bits of sha256
 hex_string=bits + checksum
-array_bits_words=[hex_string[i : i + 11] for i in range(0,len(hex_string), 11)]
+array_bits_words=[hex_string[i : i + 11] for i in range(0,len(hex_string), 11)] #chunks of 11 bits  
 seed_phrase=''
 
 with open('words.txt', mode='r') as f:
@@ -27,7 +26,6 @@ with open('words.txt', mode='r') as f:
         seed_phrase+= ' ' +  words[index_word].rstrip()
 
     seed_phrase=bytes(seed_phrase,'utf-8')
-    print(seed_phrase)
 
 # Parameters
 hash_name = 'sha512'  # The hash algorithm to use
@@ -48,19 +46,19 @@ private_key, master_chain=private_key_master_chain[:64], private_key_master_chai
 print(f"private key: {colored(private_key, 'red')}, master chain: {colored(master_chain, 'blue')}")
 
 private_key_bytes = bytes.fromhex(private_key)
-sk = ecdsa.SigningKey.from_string(private_key_bytes, curve=ecdsa.SECP256k1)
+sk = ecdsa.SigningKey.from_string(private_key_bytes, curve=ecdsa.SECP256k1) # eliptic curve 
 vk = sk.verifying_key
-public_key = (b'\04' + vk.to_string()).hex() # 04 | x | y cordinate sulla curva SECP256k1
-public_key_y, public_key_x = hex(vk.pubkey.point.y())[2:], hex(vk.pubkey.point.x())[2:] # cordinate 
+public_key = (b'\04' + vk.to_string()).hex() # 04 | x | y cordinate on SECP256k1
+public_key_y, public_key_x = hex(vk.pubkey.point.y())[2:], hex(vk.pubkey.point.x())[2:] # separate cordinate  
 
-def prefisso(x, y, p=''): # prefisso
+def prefisso(x, y, p=''): # prefix of hex cordinate curve 
     if int(y[-1], 16) % 2 == 0:  p='02'
     else: y = p='03'
     y,x = p + y, p + x
     return {'public_key_x':x, 'public_key_y':y}
 
 '''
-la chiave pubblica compressa è di 264 bits perchè si aggiunge il prefisso ed è sempre la cordinata x della curva ellittica 
+the public key compressed is the cordinate of the axis X on the eliptic curve 
 '''
 
 pair_key=prefisso(public_key_x, public_key_y)
@@ -70,13 +68,13 @@ class Bitcoin_address():
     def __init__(self, public_key):
         self.publick_key=public_key
 
-    def sha_256(self): # primo processo per address del double hash #32 bytes
+    def sha_256(self): # first process of the two hash 32 bits 
         sha256_kp=hashlib.sha256()
         sha256_kp.update(bytes(self.publick_key,'utf-8'))
         sha256_kp=sha256_kp.hexdigest()
         return sha256_kp
     
-    def ripend_160(self,value): #secondo processo del double hash #20 bytes
+    def ripend_160(self,value): # second process of the two hash 20 bits 
         h=RIPEMD160.new()
         h.update(bytes(value,'utf-8'))
         h=h.hexdigest()
@@ -89,8 +87,7 @@ class Bitcoin_address():
         two_sha256=hashlib.sha256(hashlib.sha256(bytes.fromhex(data)).digest()).hexdigest()
 
         checksum = two_sha256[:8] # checksum
-        data+= checksum # 50 bytes
-        print(data)
+        data+= checksum # 25 bytes
         address=base58.b58encode(bytes.fromhex(data))
         return address
 
