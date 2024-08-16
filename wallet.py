@@ -1,23 +1,16 @@
-import secrets
 import hashlib
 from termcolor import colored
 import ecdsa
 from Crypto.Hash import RIPEMD160
 import base58
 
-# def bits_entropy():
-#     return secrets.token_bytes(16) # esadecimale 
+entropy_bits= 'fd3ee153a6081a1811c39590eff75459'
+bits=''.join([bin(int(x,16))[2:].zfill(4) for x in entropy_bits])
 
-# bits_hex=bits_entropy() # range between 128 bits and 512 bits 
-
-bits= b'fd3ee153a6081a1811c39590eff75459'
 sha256=hashlib.sha256() # sha256 for checksum
-sha256.update(bits)
+sha256.update(bytes(entropy_bits,'utf-8'))
 sha256=sha256.hexdigest()
-print(sha256)
 checksum=bin(int(sha256[:1],16))[2:].zfill(4) # first 4 bits of sha256
-
-bits=''.join(format(bytes,'08b') for bytes in bits) # bytes hex to bits 
 
 hex_string=bits + checksum
 array_bits_words=[hex_string[i : i + 11] for i in range(0,len(hex_string), 11)]
@@ -77,13 +70,13 @@ class Bitcoin_address():
     def __init__(self, public_key):
         self.publick_key=public_key
 
-    def sha_256(self): # primo processo per address del double hash
+    def sha_256(self): # primo processo per address del double hash #32 bytes
         sha256_kp=hashlib.sha256()
         sha256_kp.update(bytes(self.publick_key,'utf-8'))
         sha256_kp=sha256_kp.hexdigest()
         return sha256_kp
     
-    def ripend_160(self,value): #secondo processo del double hash
+    def ripend_160(self,value): #secondo processo del double hash #20 bytes
         h=RIPEMD160.new()
         h.update(bytes(value,'utf-8'))
         h=h.hexdigest()
@@ -99,10 +92,12 @@ class Bitcoin_address():
         second_sha256=second_sha256.hexdigest()
 
         checksum = second_sha256[:8] # checksum
-        data+= checksum
+        data+= checksum # 50 bytes
         address=base58.b58encode_check(bytes.fromhex(data))
         return address
 
 address=Bitcoin_address(pair_key['public_key_x'])
 payload=address.ripend_160(address.sha_256())
-print(address.base58encoding(payload))
+print(len(address.base58encoding(payload)))
+
+print(len('1CBUDhWJyJHjLPqfwt4abJrTuwFSa933JV'))
