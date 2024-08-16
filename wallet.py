@@ -26,6 +26,12 @@ with open('words.txt', mode='r') as f:
     seed_phrase=bytes(seed_phrase,'utf-8')
     print(seed_phrase)
 
+
+'''
+check from here 
+'''
+
+
 # Parameters
 hash_name = 'sha512'  # The hash algorithm to use
 # passphrase= b'c'
