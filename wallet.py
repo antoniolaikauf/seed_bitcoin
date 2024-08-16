@@ -4,8 +4,11 @@ import base58
 import pdb
 from Crypto.Hash import RIPEMD160
 from termcolor import colored
+import secrets
 
-entropy_bits= '0168071cf29dbdf232de82fa34acb933'
+# print(secrets.token_bytes(16).hex())  generate new bits entropy 
+
+entropy_bits= 'cbc448d8bc1e9f4a36be10b2e06efd29'
 bits=''.join([bin(int(x,16))[2:].zfill(4) for x in entropy_bits])
 
 entropy_bits=bytes.fromhex(entropy_bits)
@@ -26,15 +29,8 @@ with open('words.txt', mode='r') as f:
     seed_phrase=bytes(seed_phrase,'utf-8')
     print(seed_phrase)
 
-
-'''
-check from here 
-'''
-
-
 # Parameters
 hash_name = 'sha512'  # The hash algorithm to use
-# passphrase= b'c'
 salt = b'mnemonic' # + passphrase  # mnemonic è una stringa che è sempre permanente 
 iterations = 2048  # Number of iterations
 dklen = 64  # Length of the derived key (512 bits)
@@ -46,7 +42,7 @@ def key_stretching_function(n,s_p,s,i,dk): # bits seed
 bits_seed_512=key_stretching_function(hash_name,seed_phrase,salt,iterations,dklen)
 
 # Derive the key e master chain
-private_key_master_chain= hashlib.pbkdf2_hmac(hash_name, bits_seed_512, b'Bitcoin seed', iterations, dklen).hex()
+private_key_master_chain= hashlib.pbkdf2_hmac(hash_name, bits_seed_512, b'Bitcoin seed', dklen).hex() #one interaction
 
 private_key, master_chain=private_key_master_chain[:64], private_key_master_chain[64:]
 print(f"private key: {colored(private_key, 'red')}, master chain: {colored(master_chain, 'blue')}")
@@ -68,7 +64,7 @@ la chiave pubblica compressa è di 264 bits perchè si aggiunge il prefisso ed �
 '''
 
 pair_key=prefisso(public_key_x, public_key_y)
-print(f"chiave pubblica: {public_key}\nchiave pubblica compressa:{pair_key['public_key_x']}\npunto x in SECP256k1: {pair_key['public_key_x']}\npunto y in SECP256k1: {pair_key['public_key_y']},")
+print(f"chiave pubblica: {public_key}\nchiave pubblica compressa:{pair_key['public_key_x']}\npunto x in SECP256k1: {pair_key['public_key_x']}\npunto y in SECP256k1: {pair_key['public_key_y']}")
 
 class Bitcoin_address():
     def __init__(self, public_key):
@@ -90,18 +86,14 @@ class Bitcoin_address():
         version = '00'
         data = version + payload
         #two sha256
-        first_sha256,second_sha256= hashlib.sha256(), hashlib.sha256()
-        first_sha256.update(bytes(data, 'utf-8'))
-        second_sha256.update(bytes(first_sha256.hexdigest(),'utf-8'))
-        second_sha256=second_sha256.hexdigest()
+        two_sha256=hashlib.sha256(hashlib.sha256(bytes.fromhex(data)).digest()).hexdigest()
 
-        checksum = second_sha256[:8] # checksum
+        checksum = two_sha256[:8] # checksum
         data+= checksum # 50 bytes
-        address=base58.b58encode_check(bytes.fromhex(data))
+        print(data)
+        address=base58.b58encode(bytes.fromhex(data))
         return address
 
 address=Bitcoin_address(pair_key['public_key_x'])
 payload=address.ripend_160(address.sha_256())
-print(address.base58encoding(payload))
-
-print(len('1CBUDhWJyJHjLPqfwt4abJrTuwFSa933JV'))
+print(f"ADDRESS: {colored(address.base58encoding(payload),'red')}")

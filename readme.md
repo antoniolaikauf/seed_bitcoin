@@ -11,3 +11,5 @@ generazione address
 
 generazione base58 check encode
 ![](IMG/mbc3_0406.png)
+
+[link per vedere l'address](https://www.blockchain.com/explorer)
