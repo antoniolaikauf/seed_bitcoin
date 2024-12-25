@@ -6,6 +6,9 @@ generazione seed
 generazione private key
 ![](IMG/mbc3_0505.png)
 
+generazione private key
+![](IMG/mbc3_0506.png)
+
 generazione address 
 ![](IMG/mbc3_0407.png)
 
