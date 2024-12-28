@@ -3,11 +3,12 @@ import ecdsa
 import base58
 from Crypto.Hash import RIPEMD160
 from termcolor import colored
-# import secrets
+import secrets
 
 # print(secrets.token_bytes(16).hex())  generate new bits entropy 
 
-entropy_bits= 'cbc448d8bc1e9f4a36be10b2e06efd29'
+# entropy_bits= 'cbc448d8bc1e9f4a36be10b2e06efd29'
+entropy_bits= secrets.token_bytes(16).hex()
 bits=''.join([bin(int(x,16))[2:].zfill(4) for x in entropy_bits])
 
 entropy_bits=bytes.fromhex(entropy_bits)
@@ -45,6 +46,11 @@ private_key_master_chain= hashlib.pbkdf2_hmac(hash_name, bits_seed_512, b'Bitcoi
 private_key, master_chain=private_key_master_chain[:64], private_key_master_chain[64:]
 print(f"private key: {colored(private_key, 'red')}, master chain: {colored(master_chain, 'blue')}")
 
+# a = 'ef' + private_key
+# two_sha256=hashlib.sha256(hashlib.sha256(bytes.fromhex(a)).digest()).hexdigest()[:8]
+# print(two_sha256)
+# print(f'dffffffffffffffffffffffffffff  {base58.b58encode(bytes.fromhex(a + two_sha256))}' )
+
 private_key_bytes = bytes.fromhex(private_key)
 sk = ecdsa.SigningKey.from_string(private_key_bytes, curve=ecdsa.SECP256k1) # eliptic curve 
 vk = sk.verifying_key
@@ -53,9 +59,8 @@ public_key_y, public_key_x = hex(vk.pubkey.point.y())[2:], hex(vk.pubkey.point.x
 
 def prefisso(x, y, p=''): # prefix of hex cordinate curve 
     if int(y[-1], 16) % 2 == 0:  p='02'
-    else: y = p='03'
-    y,x = p + y, p + x
-    return {'public_key_x':x, 'public_key_y':y}
+    else: p='03'
+    return {'public_key_x':p + x, 'public_key_y':y}
 
 '''
 the public key compressed is the cordinate of the axis X on the eliptic curve 
@@ -70,18 +75,19 @@ class Bitcoin_address():
 
     def sha_256(self): # first process of the two hash 32 bits 
         sha256_kp=hashlib.sha256()
-        sha256_kp.update(bytes(self.publick_key,'utf-8'))
+        # sha256_kp.update(bytes(self.publick_key,'utf-8'))
+        sha256_kp.update(bytes.fromhex(self.publick_key))
         sha256_kp=sha256_kp.hexdigest()
         return sha256_kp
     
     def ripend_160(self,value): # second process of the two hash 20 bits 
         h=RIPEMD160.new()
-        h.update(bytes(value,'utf-8'))
+        h.update(bytes.fromhex(value))
         h=h.hexdigest()
         return h # payload 
     
     def base58encoding(self,payload):# chiave pubblica
-        version = '00'
+        version = '6f' # per testnet la versione è 6f invece per il mainet è 00
         data = version + payload
         #two sha256
         two_sha256=hashlib.sha256(hashlib.sha256(bytes.fromhex(data)).digest()).hexdigest()
